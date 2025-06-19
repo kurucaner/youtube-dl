@@ -3,6 +3,9 @@
 # YouTube Downloader CLI - Main entry point
 # Usage: ./youtube-dl <video-id> [options]
 
+# Capture the original working directory before changing directories
+ORIGINAL_CWD="$(pwd)"
+
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -92,7 +95,7 @@ fi
 
 # Run the Node.js application
 if command -v bun >/dev/null 2>&1; then
-    bun run start "$@"
+    ORIGINAL_CWD="$ORIGINAL_CWD" bun run start "$@"
 else
-    node dist/index.js "$@"
+    ORIGINAL_CWD="$ORIGINAL_CWD" node dist/index.js "$@"
 fi 

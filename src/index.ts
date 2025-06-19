@@ -11,6 +11,10 @@ import { type VideoInfo } from "./types.js";
 
 const program = new Command();
 
+// Get the original working directory from environment variable
+const originalCwd = process.env.ORIGINAL_CWD || process.cwd();
+const defaultOutputDir = path.join(originalCwd, "downloads");
+
 program
   .name("youtube-dl")
   .description(
@@ -20,7 +24,7 @@ program
 
 program
   .argument("<video-id>", "YouTube video ID (11 characters)")
-  .option("-o, --output <path>", "Output directory", "./downloads")
+  .option("-o, --output <path>", "Output directory", defaultOutputDir)
   .option("-f, --format <format>", "Video format (mp4, webm)", "mp4")
   .option(
     "-q, --quality <quality>",
@@ -62,12 +66,17 @@ program
           return;
         }
 
+        // Resolve output path relative to original working directory if it's relative
+        const outputPath = path.isAbsolute(options.output)
+          ? options.output
+          : path.resolve(originalCwd, options.output);
+
         // Create output directory
-        await fs.mkdir(options.output, { recursive: true });
+        await fs.mkdir(outputPath, { recursive: true });
 
         // Download video
         await downloadVideo(videoId, {
-          outputDir: options.output,
+          outputDir: outputPath,
           format: options.format,
           quality: options.quality,
           audioOnly: options.audioOnly,
