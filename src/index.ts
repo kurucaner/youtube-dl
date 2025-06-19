@@ -5,7 +5,6 @@ import chalk from "chalk";
 import ora from "ora";
 import fs from "fs/promises";
 import path from "path";
-import { filesize } from "filesize";
 import { downloadVideo } from "./downloader.js";
 import { type VideoInfo } from "./types.js";
 
@@ -14,6 +13,8 @@ const program = new Command();
 // Get the original working directory from environment variable
 const originalCwd = process.env.ORIGINAL_CWD || process.cwd();
 const defaultOutputDir = path.join(originalCwd, "downloads");
+
+// Debug output
 
 program
   .name("youtube-dl")
@@ -32,6 +33,8 @@ program
     "highest"
   )
   .option("--audio-only", "Download audio only")
+  .option("--transcript-only", "Download transcript only (no video/audio)")
+  .option("--include-transcript", "Download video/audio and transcript")
   .option("--info", "Show video info only (no download)")
   .description("Download YouTube video by video ID")
   .action(async (videoId: string, options) => {
@@ -80,6 +83,8 @@ program
           format: options.format,
           quality: options.quality,
           audioOnly: options.audioOnly,
+          transcriptOnly: options.transcriptOnly,
+          includeTranscript: options.includeTranscript,
           videoInfo,
         });
       } catch (error) {

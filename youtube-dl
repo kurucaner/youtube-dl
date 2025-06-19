@@ -29,6 +29,8 @@ OPTIONS:
     -f, --format <format>    Video format: mp4, webm (default: mp4)
     -q, --quality <quality>  Quality: highest, high, medium, low (default: highest)
     --audio-only            Download audio only
+    --transcript-only       Download transcript only (no video/audio)
+    --include-transcript    Download video/audio and transcript
     --info                  Show video info only (no download)
     -h, --help              Show this help message
 
@@ -37,6 +39,8 @@ EXAMPLES:
     ./youtube-dl dQw4w9WgXcQ -o ~/Videos
     ./youtube-dl dQw4w9WgXcQ -q high -f webm
     ./youtube-dl dQw4w9WgXcQ --audio-only
+    ./youtube-dl dQw4w9WgXcQ --transcript-only
+    ./youtube-dl dQw4w9WgXcQ --include-transcript
     ./youtube-dl dQw4w9WgXcQ --info
 
 COMMANDS:
@@ -47,6 +51,13 @@ QUALITY GUIDE:
     high:    High quality (1080p preferred)
     medium:  Medium quality (720p)
     low:     Lower quality (480p)
+
+TRANSCRIPT FEATURES:
+    --transcript-only:      Downloads only the transcript/subtitles as a .txt file
+    --include-transcript:   Downloads the video AND transcript together
+    
+    Transcript files are saved with "_transcript.txt" suffix
+    Prefers English subtitles when available, falls back to first available language
 
 SETUP:
     First time setup:

@@ -14,6 +14,8 @@ export interface DownloadOptions {
   quality: string;
   audioOnly?: boolean;
   videoInfo: VideoInfo;
+  transcriptOnly?: boolean;
+  includeTranscript?: boolean;
 }
 
 export interface ProgressInfo {
@@ -21,4 +23,11 @@ export interface ProgressInfo {
   transferred: number;
   total: number;
   speed?: number;
+}
+
+export interface SubtitleTrack {
+  languageCode: string;
+  languageName: string;
+  isAutomatic: boolean;
+  url: string;
 }

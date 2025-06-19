@@ -12,6 +12,12 @@ export async function downloadVideo(
   const ytdl = await import("@distube/ytdl-core");
   const url = `https://www.youtube.com/watch?v=${videoId}`;
 
+  // Handle transcript-only download
+  if (options.transcriptOnly) {
+    await downloadTranscript(videoId, options);
+    return;
+  }
+
   const spinner = ora("🔍 Analyzing available formats...").start();
 
   try {
@@ -52,6 +58,11 @@ export async function downloadVideo(
     } else {
       console.log(chalk.blue(`📝 Saving as: ${filename}`));
       await downloadWithProgress(url, outputPath, format, options);
+    }
+
+    // Download transcript if requested
+    if (options.includeTranscript) {
+      await downloadTranscript(videoId, options);
     }
   } catch (error) {
     spinner.fail("❌ Download failed");
@@ -200,4 +211,74 @@ function sanitizeFilename(filename: string): string {
     .replace(/\s+/g, " ")
     .trim()
     .substring(0, 200); // Limit length
+}
+
+async function downloadTranscript(
+  videoId: string,
+  options: DownloadOptions
+): Promise<void> {
+  const spinner = ora("📝 Getting transcript...").start();
+
+  try {
+    const { YoutubeTranscript } = await import("youtube-transcript");
+
+    // Fetch transcript using the dedicated library
+    const transcriptArray = await YoutubeTranscript.fetchTranscript(videoId);
+
+    if (!transcriptArray || transcriptArray.length === 0) {
+      spinner.warn("⚠️  No transcript available for this video");
+      return;
+    }
+
+    spinner.text = "📝 Processing transcript...";
+
+    // Convert the transcript array to readable text with timestamps
+    const transcript = transcriptArray
+      .map((item: any) => {
+        const seconds = Math.floor(item.offset / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        const timeString = `${minutes
+          .toString()
+          .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+        return `[${timeString}] ${item.text}`;
+      })
+      .join("\n");
+
+    if (!transcript || transcript.trim().length === 0) {
+      spinner.fail("❌ Transcript is empty after processing");
+      return;
+    }
+
+    // Generate filename for transcript
+    const sanitizedTitle = sanitizeFilename(options.videoInfo.title);
+    const transcriptFilename = `${sanitizedTitle}_transcript.txt`;
+    const transcriptPath = path.join(options.outputDir, transcriptFilename);
+
+    // Write transcript to file
+    fs.writeFileSync(transcriptPath, transcript, "utf8");
+
+    spinner.succeed(`✅ Transcript saved: ${transcriptFilename}`);
+    console.log(
+      chalk.green(`📄 Transcript file: ${path.basename(transcriptPath)}`)
+    );
+    console.log(chalk.blue(`📊 Transcript entries: ${transcriptArray.length}`));
+  } catch (error) {
+    spinner.fail("❌ Failed to download transcript");
+    if (error instanceof Error) {
+      if (error.message.includes("Could not retrieve a transcript")) {
+        console.error(
+          chalk.yellow(
+            "This video doesn't have any available transcripts/captions."
+          )
+        );
+      } else {
+        console.error(chalk.red(`Error: ${error.message}`));
+      }
+    }
+    // Don't throw error for transcript failure in case it's called alongside video download
+    if (options.transcriptOnly) {
+      throw error;
+    }
+  }
 }
