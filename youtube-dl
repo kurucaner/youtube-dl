@@ -3,6 +3,12 @@
 # YouTube Downloader CLI - Main entry point
 # Usage: ./youtube-dl <video-id> [options]
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Change to the script's directory so bun commands work correctly
+cd "$SCRIPT_DIR"
+
 show_help() {
     cat << EOF
 🎬 YouTube Downloader CLI
