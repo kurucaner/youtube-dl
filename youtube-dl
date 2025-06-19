@@ -1,0 +1,92 @@
+#!/bin/bash
+
+# YouTube Downloader CLI - Main entry point
+# Usage: ./youtube-dl <video-id> [options]
+
+show_help() {
+    cat << EOF
+🎬 YouTube Downloader CLI
+
+Download YouTube videos in highest quality!
+
+USAGE:
+    ./youtube-dl <video-id> [options]
+
+ARGUMENTS:
+    <video-id>               YouTube video ID (11 characters)
+
+OPTIONS:
+    -o, --output <path>      Output directory (default: ./downloads)
+    -f, --format <format>    Video format: mp4, webm (default: mp4)
+    -q, --quality <quality>  Quality: highest, high, medium, low (default: highest)
+    --audio-only            Download audio only
+    --info                  Show video info only (no download)
+    -h, --help              Show this help message
+
+EXAMPLES:
+    ./youtube-dl dQw4w9WgXcQ
+    ./youtube-dl dQw4w9WgXcQ -o ~/Videos
+    ./youtube-dl dQw4w9WgXcQ -q high -f webm
+    ./youtube-dl dQw4w9WgXcQ --audio-only
+    ./youtube-dl dQw4w9WgXcQ --info
+
+COMMANDS:
+    ./youtube-dl info <video-id>    Get video information without downloading
+
+QUALITY GUIDE:
+    highest: Best available quality (4K, 1080p, etc.)
+    high:    High quality (1080p preferred)
+    medium:  Medium quality (720p)
+    low:     Lower quality (480p)
+
+SETUP:
+    First time setup:
+    1. Run: bun install
+    2. Run: bun run build
+    3. Then use: ./youtube-dl <video-id>
+EOF
+}
+
+# Check if Node.js dependencies are installed
+if [ ! -d "node_modules" ]; then
+    echo "📦 Installing dependencies..."
+    if command -v bun >/dev/null 2>&1; then
+        bun install
+    elif command -v npm >/dev/null 2>&1; then
+        npm install
+    else
+        echo "❌ Error: Neither bun nor npm found. Please install Node.js and bun/npm."
+        exit 1
+    fi
+fi
+
+# Check if TypeScript is built
+if [ ! -d "dist" ]; then
+    echo "🔨 Building TypeScript..."
+    if command -v bun >/dev/null 2>&1; then
+        bun run build
+    else
+        npm run build
+    fi
+fi
+
+# Check for help flag
+if [[ "$1" == "-h" || "$1" == "--help" || "$1" == "help" ]]; then
+    show_help
+    exit 0
+fi
+
+# Check if video ID is provided
+if [ -z "$1" ]; then
+    echo "❌ Error: Video ID is required"
+    echo ""
+    show_help
+    exit 1
+fi
+
+# Run the Node.js application
+if command -v bun >/dev/null 2>&1; then
+    bun run start "$@"
+else
+    node dist/index.js "$@"
+fi 
